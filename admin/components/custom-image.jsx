@@ -2,11 +2,13 @@ import React from 'react'
 
 const CustomImage = (props) => {
   const { record, property } = props
-  const filePath = record?.params?.[property.name]
+  const fileKey = record?.params?.[property.name]
 
-  if (!filePath) return <span>No image</span>
+  if (!fileKey) return <span>No image</span>
 
-  const src = `/uploads/${filePath.replace(/^uploads[\\/]/, '').replace(/\\/g, '/')}`
+  const src = fileKey.startsWith('/uploads')
+    ? fileKey
+    : `/uploads/${fileKey.replace(/^uploads[\\/]/, '').replace(/\\/g, '/')}`
 
   return (
     <img

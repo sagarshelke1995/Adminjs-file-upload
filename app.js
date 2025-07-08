@@ -1,5 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import nunjucks from 'nunjucks'
 import AdminJS from 'adminjs'
 import AdminJSExpress from '@adminjs/express'
 import * as AdminJSMongoose from '@adminjs/mongoose'
@@ -8,12 +9,27 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { ComponentLoader } from 'adminjs'
 import File from './schema/File.js'
+import routes from './route/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
 const PORT = 3000
+
+// Set up Nunjucks templating
+function setUpNunjucks() {
+  nunjucks.configure('views', {
+    autoescape: true,
+    express: app,
+    watch: true,
+  })
+}
+
+setUpNunjucks()
+app.set('view engine', 'html')
+
+// / admin js setting 
 
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
@@ -47,11 +63,18 @@ const admin = new AdminJS({
       options: {
           properties: {
               filePath: { isVisible: false },
+              uploadedFile: { isVisible: {
+                  list: false,   
+                  filter: false,
+                  show: false,    
+                  edit: true,  
+              }, },
               fileKey: {
-                  isVisible: { list: true, edit: false, filter: false, show: true },
+                  isVisible: { list: true, edit: true, filter: false, show: true },
                   components: {
                       list: UploadImageListComponent,
-                      // show: UploadImageListComponent,
+                      show: UploadCustomComponent,
+                      edit: UploadCustomComponent,
             }
             }
         }
@@ -61,7 +84,7 @@ const admin = new AdminJS({
         componentLoader,
         provider: {
             local: {
-            bucket: path.join(__dirname, 'uploads'),
+            bucket: path.join(__dirname, ''),
             },
         },
         properties: {
@@ -71,7 +94,7 @@ const admin = new AdminJS({
             size: 'size',
             // ❌ Do NOT include filePath if it's same as key
         },
-        uploadPath: (record, filename) => `files/${Date.now()}-${filename.replace(/\s+/g, '-')}`,
+        uploadPath: (record, filename) => `/uploads/files/${Date.now()}-${filename.replace(/\s+/g, '-')}`,
         })
       ],
     },
@@ -82,6 +105,8 @@ const admin = new AdminJS({
 // ✅ 4. Express router for AdminJS
 const adminRouter = AdminJSExpress.buildRouter(admin)
 app.use(admin.options.rootPath, adminRouter)
+
+app.use('/', routes)
 
 // ✅ 5. MongoDB connection
 mongoose
