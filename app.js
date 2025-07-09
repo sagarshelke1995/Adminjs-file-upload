@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
-const PORT = 3000
+const PORT = 8000
 
 // Set up Nunjucks templating
 function setUpNunjucks() {
@@ -110,7 +110,7 @@ app.use('/', routes)
 
 // ✅ 5. MongoDB connection
 mongoose
-  .connect('mongodb+srv://shelkesagar1995ss:Similardata%40123@clustergame.fd7zhnl.mongodb.net/aquizme')
+  .connect('mongodb+srv://shelkesagar1995ss:Similardata%40123@clustergame.fd7zhnl.mongodb.net/Adminjs')
   .then(() => {
     app.listen(PORT, () => {
       console.log(`✅ Server started on http://localhost:${PORT}`)
